@@ -169,13 +169,13 @@ public class TestDrive17181Main extends LinearOpMode {
         try {
             // DC motors
             im_intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
-            sm_shootingMotor1 = hardwareMap.get(DcMotorEx.class, "shootingMotor1");
-            sm_shootingMotor2 = hardwareMap.get(DcMotorEx.class, "shootingMotor2");
+            sm_shootingMotor1 = hardwareMap.get(DcMotorEx.class, "sm1");
+            sm_shootingMotor2 = hardwareMap.get(DcMotorEx.class, "sm2");
             cb_dcMotor = hardwareMap.get(DcMotorEx.class, "cbMotor");
 
             // Optional servos — try to map; skip if not in config
             try {
-                gb_servo = hardwareMap.get(Servo.class, "servo1");
+                gb_servo = hardwareMap.get(Servo.class, "sm_servo");
                 gb_hasServo = true;
             } catch (Exception ignored) { gb_hasServo = false; }
 
