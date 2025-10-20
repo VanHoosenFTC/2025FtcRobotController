@@ -1,3 +1,4 @@
+/* This is updated code as of 10192025 */
 package org.firstinspires.ftc.teamcode.teleop;
 
 import static org.firstinspires.ftc.teamcode.ChassisConstants.LEFT_FRONT_MOTOR_NAME;
@@ -8,6 +9,9 @@ import static org.firstinspires.ftc.teamcode.ChassisConstants.RIGHT_REAR_MOTOR_N
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.ShootingDirectionServo;
+import org.firstinspires.ftc.teamcode.subsystems.ShootingSystem;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.components.BindingsComponent;
@@ -20,13 +24,27 @@ import dev.nextftc.hardware.impl.MotorEx;
 
 @TeleOp(name = "Robot Centric TeleOp")
 public class RobotCentricTeleOp extends NextFTCOpMode {
+
+    //private Telemetry telemetry;
+    private ShootingSystem shootingSystem;
+    private ShootingDirectionServo shootingDirectionServo;
+    private Intake intakeSystem;
+
     public RobotCentricTeleOp() {
+        //telemetry = super.telemetry;
+        shootingSystem = ShootingSystem.getInstance(telemetry);
+        intakeSystem = Intake.getInstance(telemetry);
+        shootingDirectionServo = ShootingDirectionServo.getInstance(telemetry);
         addComponents(
-                new SubsystemComponent(Intake.INSTANCE),
+                new SubsystemComponent(shootingSystem),
+                new SubsystemComponent(intakeSystem),
+                new SubsystemComponent(shootingDirectionServo),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
         );
     }
+
+
 
     // change the names and directions to suit your robot
     private final MotorEx frontLeftMotor = new MotorEx(LEFT_FRONT_MOTOR_NAME);
@@ -47,9 +65,19 @@ public class RobotCentricTeleOp extends NextFTCOpMode {
         );
         driverControlled.schedule();
 
-        Gamepads.gamepad2().x().whenBecomesTrue(Intake.INSTANCE.start);
-        Gamepads.gamepad2().a().whenBecomesTrue(Intake.INSTANCE.stop);
-        Gamepads.gamepad2().b().whenBecomesTrue(Intake.INSTANCE.reverse);
+        // Shooting System Controls on Gamepad 2
+        Gamepads.gamepad2().x().whenBecomesTrue(shootingSystem.startStop);
+        Gamepads.gamepad2().y().whenBecomesTrue(shootingSystem.toggleShootingPower);
+        Gamepads.gamepad2().leftBumper().whenBecomesTrue(shootingSystem.decreaseShootingPower);
+        Gamepads.gamepad2().rightBumper().whenBecomesTrue(shootingSystem.increaseShootingPower);
 
+        // Intake System Controls on Gamepad 2
+        Gamepads.gamepad2().b().whenBecomesTrue(intakeSystem.reverse);
+        Gamepads.gamepad2().a().whenBecomesTrue(intakeSystem.startStop);
+
+        // Shooting Direction Servo Controls on Gamepad 2
+        Gamepads.gamepad2().dpadUp().whenBecomesTrue(shootingDirectionServo.downShootingServo);
+        Gamepads.gamepad2().dpadDown().whenBecomesTrue(shootingDirectionServo.upShootingServo);
     }
+
 }
