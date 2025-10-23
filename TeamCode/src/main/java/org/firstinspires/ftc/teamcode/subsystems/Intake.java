@@ -38,24 +38,21 @@ public class Intake implements Subsystem {
         return INSTANCE;
     }
 
-    /**
-     * Gets the existing singleton instance (use only after getInstance(telemetry) has been called)
-     * @return The singleton instance
-     */
     public static Intake getInstance() {
         if (INSTANCE == null) {
-            throw new IllegalStateException("Intake must be initialized with telemetry first!");
+            throw new NullPointerException("Intake subsystem is not initialized yet");
         }
         return INSTANCE;
     }
+
 
     // Motor instance representing the intake motor
     private MotorEx motor = new MotorEx("intakeMotor");
 
     // Power levels for different intake states
-    private static final double REVERSE_POWER = 1.0;   // Full power intake
+    private static final double REVERSE_POWER = -1.0;   // Full power intake
     private static final double STOP_POWER = 0.0;      // Motor off
-    private static final double INTAKE_POWER = -1.0;  // Full power reverse
+    private static final double INTAKE_POWER = 1.0;  // Full power reverse
 
     // Command to start the intake motor (intake game elements)
     public Command startStop = new InstantCommand(() -> {
@@ -65,6 +62,9 @@ public class Intake implements Subsystem {
 
     // Command to stop the intake motor
 //    public Command stop = new InstantCommand(() -> motor.setPower(STOP_POWER)).requires(this);
+    public void stop() {
+        motor.setPower(STOP_POWER);
+    }
 
     // Command to reverse the intake motor direction (outtake/eject)
     public Command reverse = new InstantCommand(() -> motor.setPower(REVERSE_POWER))

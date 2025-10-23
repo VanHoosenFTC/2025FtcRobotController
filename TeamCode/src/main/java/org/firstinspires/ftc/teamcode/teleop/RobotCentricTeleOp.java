@@ -78,6 +78,9 @@ public class RobotCentricTeleOp extends NextFTCOpMode {
         // Shooting Direction Servo Controls on Gamepad 2
         Gamepads.gamepad2().dpadUp().whenBecomesTrue(shootingDirectionServo.downShootingServo);
         Gamepads.gamepad2().dpadDown().whenBecomesTrue(shootingDirectionServo.upShootingServo);
+
+        //command to stop all operations of gamepad2
+        Gamepads.gamepad2().back().whenBecomesTrue(shootingSystem.stopAllSubsystems);
     }
 
 }
