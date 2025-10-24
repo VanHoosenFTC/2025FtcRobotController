@@ -130,14 +130,12 @@ public class ShootingDirectionServo implements Subsystem {
     public Command upShootingServo = new InstantCommand(() -> {
         if (servo != null) {
             double clampedPosition = Math.min(1.0, servo.getPosition() + SERVO_POS_INCREMENT);
-//                double clampedPosition = servo.getPosition() + SERVO_POS_INCREMENT;
             servo.setPosition(clampedPosition);
         }
     }).requires(this);
     public Command downShootingServo = new InstantCommand(() -> {
         if (servo != null) {
-            double clampedPosition = Math.max(0.0, servo.getPosition() - SERVO_POS_INCREMENT);
-//                double clampedPosition = servo.getPosition() - SERVO_POS_INCREMENT;
+            double clampedPosition = Math.max(0.8, servo.getPosition() - SERVO_POS_INCREMENT);
             servo.setPosition(clampedPosition);
         }
     }).requires(this);

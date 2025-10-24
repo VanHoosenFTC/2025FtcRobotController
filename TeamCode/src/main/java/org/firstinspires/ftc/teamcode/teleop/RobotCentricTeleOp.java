@@ -8,6 +8,7 @@ import static org.firstinspires.ftc.teamcode.ChassisConstants.RIGHT_REAR_MOTOR_N
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.subsystems.BallLoadingServo;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.ShootingDirectionServo;
 import org.firstinspires.ftc.teamcode.subsystems.ShootingSystem;
@@ -28,6 +29,7 @@ public class RobotCentricTeleOp extends NextFTCOpMode {
     //private Telemetry telemetry;
     private ShootingSystem shootingSystem;
     private ShootingDirectionServo shootingDirectionServo;
+    private BallLoadingServo ballLoadingServo;
     private Intake intakeSystem;
 
     public RobotCentricTeleOp() {
@@ -35,10 +37,12 @@ public class RobotCentricTeleOp extends NextFTCOpMode {
         shootingSystem = ShootingSystem.getInstance(telemetry);
         intakeSystem = Intake.getInstance(telemetry);
         shootingDirectionServo = ShootingDirectionServo.getInstance(telemetry);
+        ballLoadingServo = BallLoadingServo.getInstance(telemetry);
         addComponents(
                 new SubsystemComponent(shootingSystem),
                 new SubsystemComponent(intakeSystem),
                 new SubsystemComponent(shootingDirectionServo),
+                new SubsystemComponent(ballLoadingServo),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
         );
@@ -78,6 +82,19 @@ public class RobotCentricTeleOp extends NextFTCOpMode {
         // Shooting Direction Servo Controls on Gamepad 2
         Gamepads.gamepad2().dpadUp().whenBecomesTrue(shootingDirectionServo.downShootingServo);
         Gamepads.gamepad2().dpadDown().whenBecomesTrue(shootingDirectionServo.upShootingServo);
+
+        //command to stop all operations of gamepad2
+        Gamepads.gamepad2().back().whenBecomesTrue(shootingSystem.stopAllSubsystems);
+
+        /*command to start/stop ball loading servo
+        Gamepads.gamepad2().dpadRight().whenBecomesTrue(ballLoadingServo.runForward());
+        Gamepads.gamepad2().dpadLeft().whenBecomesTrue(ballLoadingServo.runBackward()); */
+
+        // Press dpad right once to start running forward continuously
+        Gamepads.gamepad2().dpadRight().whenBecomesTrue(ballLoadingServo.runForward());
+
+// Press dpad left once to stop
+        Gamepads.gamepad2().dpadLeft().whenBecomesTrue(ballLoadingServo.stopContinuous());
     }
 
 }

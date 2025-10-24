@@ -34,6 +34,11 @@
             //shooterMotors = new MotorGroup(motor2, motor1);
         }
 
+        public void stop() {
+            shootingMotor1.setPower(STOP_POWER);
+            shootingMotor2.setPower(STOP_POWER);
+        }
+
         /**
          * Gets or creates the singleton instance of the ShootingSystem subsystem.
          * @param telemetry The telemetry object to use for displaying data
@@ -64,6 +69,15 @@
         private static final double STOP_POWER = 0.0;     // Motors off
 
         private static final double SHOOTING_PWR_INCREMENT = 0.05;
+
+        public Command stopAllSubsystems = new InstantCommand(() -> {
+                shootingMotor1.setPower(STOP_POWER);
+                shootingMotor2.setPower(STOP_POWER);
+
+                // Get the object of Intake singleton class and stop that motor
+                Intake.getInstance().stop();
+
+        }).requires(this);
 
         // Command to start the shooting motors at low power
         public Command startStop = new InstantCommand(() -> {
