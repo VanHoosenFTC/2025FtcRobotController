@@ -86,15 +86,9 @@ public class RobotCentricTeleOp extends NextFTCOpMode {
         //command to stop all operations of gamepad2
         Gamepads.gamepad2().back().whenBecomesTrue(shootingSystem.stopAllSubsystems);
 
-        /*command to start/stop ball loading servo
-        Gamepads.gamepad2().dpadRight().whenBecomesTrue(ballLoadingServo.runForward());
-        Gamepads.gamepad2().dpadLeft().whenBecomesTrue(ballLoadingServo.runBackward()); */
-
-        // Press dpad right once to start running forward continuously
-        Gamepads.gamepad2().dpadRight().whenBecomesTrue(ballLoadingServo.runForward());
-
-// Press dpad left once to stop
-        Gamepads.gamepad2().dpadLeft().whenBecomesTrue(ballLoadingServo.stopContinuous());
+        /** command to start/stop ball loading servo */
+        Gamepads.gamepad2().dpadLeft().whenBecomesTrue(ballLoadingServo.runBackward());
+        Gamepads.gamepad2().dpadRight().whenBecomesTrue(ballLoadingServo.stopContinuous());
     }
 
 }

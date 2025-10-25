@@ -31,7 +31,7 @@ public class BallLoadingServo implements Subsystem {
     private BallLoadingServo(Telemetry telemetry) {
         this.telemetry = telemetry;
         crServo = new CRServoEx(SERVO_NM);
-        crServo.setPower(0.0); // Initialize stopped
+        //crServo.setPower(0.0); // Initialize stopped
     }
 
     /**
@@ -68,7 +68,7 @@ public class BallLoadingServo implements Subsystem {
                 currentPower = Math.max(-1.0, Math.min(1.0, power)); // Clamp between -1 and 1
                 crServo.setPower(currentPower);
             }
-        });
+        }).requires(this);
     }
 
     /**
@@ -109,17 +109,16 @@ public class BallLoadingServo implements Subsystem {
      * Stop the continuous rotation servo.
      * @return Command to stop
      */
-    public Command stopContinuous() {
-        return setContinuousPower(0.0);
-    }
+    public Command stopContinuous() { return setContinuousPower(0.0);}
 
+    public void stop(){crServo.setPower(0.0);}
     /**
      * The periodic method is called repeatedly while the robot is running.
      * Displays telemetry data about the servo status.
      */
     @Override
     public void periodic() {
-        telemetry.addData("<=====Servo Subsystem=====>", "");
+        telemetry.addData("<=====Ball Loading Servo=====>", "");
         telemetry.addData("CR Power", "%.3f", currentPower);
         String status = currentPower > 0 ? "Forward" :
                 currentPower < 0 ? "Backward" : "Stopped";

@@ -162,7 +162,7 @@ public class ShootingDirectionServo implements Subsystem {
      */
     @Override
     public void periodic() {
-        telemetry.addData("<=====Servo Subsystem=====>", "");
+        telemetry.addData("<=====Shooting Direction Servo=====>", "");
         if (servo != null) {
             double currentPos = servo.getPosition();
             String positionName = getCurrentPositionName(currentPos);
