@@ -8,7 +8,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * Servo Subsystem for the robot.
- *
  * This class controls a servo mechanism with position control.
  * It provides commands to set the servo to various positions (min, max, middle, custom).
  */
@@ -55,106 +54,23 @@ public class ShootingDirectionServo implements Subsystem {
     }
 
     // Servo positions
-    private double minPos = 0.0;
-    private double pos1 = 0.33;
-    private double pos2 = 0.67;
-    private double maxPos = 1.0;
+    private final double minPos = 1.0;
+    private final double maxPos = 0.8;
 
     private static final double SERVO_POS_INCREMENT = 0.05;
 
-    /**
-     * Initialize the servo with a hardware map name
-     * @param SERVO_NM The name of the servo in the hardware map
-     */
-    public void initialize(String SERVO_NM) {
-        this.servo = new ServoEx(SERVO_NM);
-//        this.servo.setdirection(ServoEx.Direction.FORWARD);
-    }
-
-    /**
-     * Initialize the servo with custom positions
-     * @param servoName The name of the servo in the hardware map
-     * @param minPos Minimum position (0.0 to 1.0)
-     * @param pos1 First intermediate position
-     * @param pos2 Second intermediate position
-     * @param maxPos Maximum position (0.0 to 1.0)
-     */
-    public void initialize(String servoName, double minPos, double pos1, double pos2, double maxPos) {
-        this.servo = new ServoEx(servoName);
-        this.minPos = minPos;
-        this.pos1 = pos1;
-        this.pos2 = pos2;
-        this.maxPos = maxPos;
-    }
-
-    // Command to set servo to minimum position
-    public Command setMinPos = new InstantCommand(() -> {
-        if (servo != null) servo.setPosition(minPos);
-    }).requires(this);
-
-    // Command to set servo to first intermediate position
-    public Command setPos1 = new InstantCommand(() -> {
-        if (servo != null) servo.setPosition(pos1);
-    }).requires(this);
-
-    // Command to set servo to second intermediate position
-    public Command setPos2 = new InstantCommand(() -> {
-        if (servo != null) servo.setPosition(pos2);
-    }).requires(this);
-
-    // Command to set servo to maximum position
-    public Command setMaxPos = new InstantCommand(() -> {
-        if (servo != null) servo.setPosition(maxPos);
-    }).requires(this);
-
-    // Legacy commands for backward compatibility
-//    public Command setMin = setMinPos;
-//    public Command setMax = setMaxPos;
-//    public Command setMiddle = setPos1;
-
-    /**
-     * Command to set servo to a custom position
-     * @param increment The target position (0.0 to 1.0)
-     * @return Command to set the position
-     */
-    public Command setPosition(double increment) {
-        return new InstantCommand(() -> {
-            if (servo != null) {
-                double futurePos = servo.getPosition() + increment;
-                double clampedPosition = Math.max(0.0, Math.min(1.0, futurePos));
-                servo.setPosition(clampedPosition);
-            }
-        }).requires(this);
-    }
-
     public Command upShootingServo = new InstantCommand(() -> {
         if (servo != null) {
-            double clampedPosition = Math.min(1.0, servo.getPosition() + SERVO_POS_INCREMENT);
+            double clampedPosition = Math.min(minPos, servo.getPosition() + SERVO_POS_INCREMENT);
             servo.setPosition(clampedPosition);
         }
     }).requires(this);
     public Command downShootingServo = new InstantCommand(() -> {
         if (servo != null) {
-            double clampedPosition = Math.max(0.8, servo.getPosition() - SERVO_POS_INCREMENT);
+            double clampedPosition = Math.max(maxPos, servo.getPosition() - SERVO_POS_INCREMENT);
             servo.setPosition(clampedPosition);
         }
     }).requires(this);
-
-    /**
-     * Get the current servo position
-     * @return Current position (0.0 to 1.0)
-     */
-    public double getPosition() {
-        return servo != null ? servo.getPosition() : 0.0;
-    }
-
-    /**
-     * Get the configured positions
-     */
-//    public double getMinPos() { return minPos; }
-//    public double getPos1() { return pos1; }
-//    public double getPos2() { return pos2; }
-//    public double getMaxPos() { return maxPos; }
 
     /**
      * The periodic method is called repeatedly while the robot is running.
@@ -184,10 +100,6 @@ public class ShootingDirectionServo implements Subsystem {
 
         if (Math.abs(currentPos - minPos) < tolerance) {
             return "Min";
-        } else if (Math.abs(currentPos - pos1) < tolerance) {
-            return "Pos1";
-        } else if (Math.abs(currentPos - pos2) < tolerance) {
-            return "Pos2";
         } else if (Math.abs(currentPos - maxPos) < tolerance) {
             return "Max";
         } else {
