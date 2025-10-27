@@ -7,37 +7,43 @@ import dev.nextftc.hardware.impl.CRServoEx;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
- * Servo Subsystem for the robot with continuous rotation.
+ * This class controls the **ball-loading servo** on the robot.
+ * It’s a *Continuous Rotation Servo*, which means it can spin
+ * like a motor — not just move to a position.
  *
- * This class controls a goBILDA dual-mode servo in continuous rotation mode.
- * The servo must be physically switched to CR mode on the hardware.
+ * Think of it like a little conveyor belt motor
+ * that helps push balls into the shooter.
  */
 public class BallLoadingServo implements Subsystem {
 
-    // Singleton instance of the ServoSubsystem (initially null)
+    // We only want one copy of this class (Singleton pattern)
     private static BallLoadingServo INSTANCE = null;
 
-    // Servo instance for continuous rotation
+    // The servo that spins to load the balls
     private CRServoEx crServo;
+
+    // The name of the servo as set in the Control Hub configuration
     private static final String SERVO_NM = "ld_servo";
 
-    // Current power tracking
+    // Keeps track of how fast the servo is spinning (-1 = backward, 1 = forward, 0 = stopped)
     private double currentPower = 0.0;
 
-    // Telemetry for displaying servo status
+    // Used to show messages on the Driver Station phone
     private Telemetry telemetry;
 
-    // Private constructor to ensure only one instance exists
+    /**
+     * This sets up the servo and telemetry system.
+     * It’s private so that only this class can make it.
+     */
     private BallLoadingServo(Telemetry telemetry) {
         this.telemetry = telemetry;
-        crServo = new CRServoEx(SERVO_NM);
-        //crServo.setPower(0.0); // Initialize stopped
+        crServo = new CRServoEx(SERVO_NM); // Connects to the real servo
+        //crServo.setPower(0.0); // Start stopped (optional)
     }
 
     /**
-     * Gets or creates the singleton instance of the ServoSubsystem.
-     * @param telemetry The telemetry object to use for displaying data
-     * @return The singleton instance
+     * Gives back the one and only BallLoadingServo.
+     * If it doesn’t exist yet, it creates it.
      */
     public static BallLoadingServo getInstance(Telemetry telemetry) {
         if (INSTANCE == null) {
@@ -47,81 +53,86 @@ public class BallLoadingServo implements Subsystem {
     }
 
     /**
-     * Gets the existing singleton instance (use only after getInstance(telemetry) has been called)
-     * @return The singleton instance
+     * Gives the existing servo controller (after it’s already created).
+     * You must call the other getInstance() first.
      */
     public static BallLoadingServo getInstance() {
         if (INSTANCE == null) {
-            throw new IllegalStateException("ServoSubsystem must be initialized with telemetry first!");
+            throw new IllegalStateException("BallLoadingServo must be set up first!");
         }
         return INSTANCE;
     }
 
     /**
-     * Set the continuous rotation power.
-     * @param power Power value from -1.0 (full reverse) to 1.0 (full forward), 0.0 = stop
-     * @return Command to set the power
+     * Changes how fast and in what direction the servo spins.
+     * -1.0 = full backward, 1.0 = full forward, 0.0 = stop
      */
     public Command setContinuousPower(double power) {
         return new InstantCommand(() -> {
             if (crServo != null) {
-                currentPower = Math.max(-1.0, Math.min(1.0, power)); // Clamp between -1 and 1
+                // Make sure power stays between -1 and 1
+                currentPower = Math.max(-1.0, Math.min(1.0, power));
                 crServo.setPower(currentPower);
             }
         }).requires(this);
     }
 
     /**
-     * Run servo forward at specified power.
-     * @param power Power from 0.0 to 1.0 (default: 1.0 for full speed)
-     * @return Command to run forward
+     * Spins the servo forward (positive direction) at a chosen speed.
      */
     public Command runForward(double power) {
         return setContinuousPower(Math.abs(power));
     }
 
     /**
-     * Run servo forward at full speed.
-     * @return Command to run forward
+     * Spins the servo forward at full speed.
      */
     public Command runForward() {
         return runForward(1.0);
     }
 
     /**
-     * Run servo backward at specified power.
-     * @param power Power from 0.0 to 1.0 (default: 1.0 for full speed)
-     * @return Command to run backward
+     * Spins the servo backward (negative direction) at a chosen speed.
      */
     public Command runBackward(double power) {
         return setContinuousPower(-Math.abs(power));
     }
 
     /**
-     * Run servo backward at full speed.
-     * @return Command to run backward
+     * Spins the servo backward at full speed.
      */
     public Command runBackward() {
         return runBackward(1.0);
     }
 
     /**
-     * Stop the continuous rotation servo.
-     * @return Command to stop
+     * Stops the servo completely (no spinning).
      */
-    public Command stopContinuous() { return setContinuousPower(0.0);}
+    public Command stopContinuous() {
+        return setContinuousPower(0.0);
+    }
 
-    public void stop(){crServo.setPower(0.0);}
     /**
-     * The periodic method is called repeatedly while the robot is running.
-     * Displays telemetry data about the servo status.
+     * Quick stop command that stops it immediately.
+     */
+    public void stop() {
+        crServo.setPower(0.0);
+    }
+
+    /**
+     * Runs repeatedly during TeleOp.
+     * It shows what the servo is doing (forward, backward, or stopped)
+     * and how much power it’s using.
      */
     @Override
     public void periodic() {
-        telemetry.addData("<=====Ball Loading Servo=====>", "");
+        telemetry.addData("<===== Ball Loading Servo =====>", "");
         telemetry.addData("CR Power", "%.3f", currentPower);
+
+        // Show a friendly word for the direction
         String status = currentPower > 0 ? "Forward" :
                 currentPower < 0 ? "Backward" : "Stopped";
+
         telemetry.addData("CR Status", status);
     }
 }
