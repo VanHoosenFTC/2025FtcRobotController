@@ -7,29 +7,30 @@ import dev.nextftc.hardware.impl.MotorEx;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
- * Intake Subsystem for the robot.
+ * This class controls the **intake system** on the robot.
  *
- * This class controls the intake mechanism using a single motor with simple power control.
- * It provides commands to start (intake), stop, and reverse (outtake) the intake.
+ * The intake is the part that *picks up game pieces* (like rings or balls)
+ * and pulls them into the robot using a spinning motor.
  */
 public class Intake implements Subsystem {
 
-    // Singleton instance of the Intake subsystem (initially null)
+    // We only want ONE Intake object in the whole program (Singleton pattern)
     private static Intake INSTANCE = null;
 
-    // Telemetry for displaying motor status
+    // Used to show messages and data on the Driver Station phone
     private Telemetry telemetry;
 
-    // Private constructor to ensure only one instance exists
+    /**
+     * This sets up the intake system with telemetry.
+     * It’s private so only this class can make it.
+     */
     private Intake(Telemetry telemetry) {
-
         this.telemetry = telemetry;
     }
 
     /**
-     * Gets or creates the singleton instance of the Intake subsystem.
-     * @param telemetry The telemetry object to use for displaying data
-     * @return The singleton instance
+     * Gets or creates the one Intake system for the robot.
+     * If it doesn’t exist yet, it makes a new one.
      */
     public static Intake getInstance(Telemetry telemetry) {
         if (INSTANCE == null) {
@@ -38,6 +39,10 @@ public class Intake implements Subsystem {
         return INSTANCE;
     }
 
+    /**
+     * Returns the existing Intake instance (after it's created).
+     * Throws an error if someone forgot to set it up first.
+     */
     public static Intake getInstance() {
         if (INSTANCE == null) {
             throw new NullPointerException("Intake subsystem is not initialized yet");
@@ -45,41 +50,54 @@ public class Intake implements Subsystem {
         return INSTANCE;
     }
 
-
-    // Motor instance representing the intake motor
+    // This is the motor that makes the intake spin
     private MotorEx motor = new MotorEx("intakeMotor");
 
-    // Power levels for different intake states
-    private static final double REVERSE_POWER = -1.0;   // Full power intake
-    private static final double STOP_POWER = 0.0;      // Motor off
-    private static final double INTAKE_POWER = 1.0;  // Full power reverse
+    // Power settings for different actions
+    private static final double REVERSE_POWER = -1.0;  // Spin backward (push things OUT)
+    private static final double STOP_POWER = 0.0;      // Stop spinning
+    private static final double INTAKE_POWER = 1.0;    // Spin forward (pull things IN)
 
-    // Command to start the intake motor (intake game elements)
+    /**
+     * Command to start or stop the intake motor.
+     * When the button is pressed:
+     * - If it's stopped, it starts spinning forward (to pull game pieces in)
+     * - If it's already spinning, it stops
+     */
     public Command startStop = new InstantCommand(() -> {
-        if (motor.getPower() <= 0.10 && motor.getPower() >= 0.0) motor.setPower(INTAKE_POWER);
-        else motor.setPower(STOP_POWER);
+        if (motor.getPower() <= 0.10 && motor.getPower() >= 0.0)
+            motor.setPower(INTAKE_POWER);   // Turn ON the intake
+        else
+            motor.setPower(STOP_POWER);     // Turn it OFF
     }).requires(this);
 
-    // Command to stop the intake motor
-//    public Command stop = new InstantCommand(() -> motor.setPower(STOP_POWER)).requires(this);
+    /**
+     * Stops the intake completely (used in emergencies or resets)
+     */
     public void stop() {
         motor.setPower(STOP_POWER);
     }
 
-    // Command to reverse the intake motor direction (outtake/eject)
+    /**
+     * Command to reverse the intake motor.
+     * This is used to push out game pieces that might be stuck.
+     */
     public Command reverse = new InstantCommand(() -> motor.setPower(REVERSE_POWER))
             .requires(this);
 
     /**
-     * The periodic method is called repeatedly while the robot is running.
-     * Displays telemetry data about the intake motor status.
+     * This method runs all the time during TeleOp.
+     * It shows live data about what the intake motor is doing:
+     *  - Power level (how hard it's spinning)
+     *  - Direction (FORWARD or REVERSE)
+     *  - Velocity (how fast it’s turning)
      */
     @Override
     public void periodic() {
-        telemetry.addData("<=====Intake Subsystem=====>","");
+        telemetry.addData("<===== Intake Subsystem =====>", "");
         telemetry.addData("Intake Power", "%.2f", motor.getPower());
         telemetry.addData("Intake Direction", motor.getDirection());
         telemetry.addData("Intake Velocity", "%.2f", motor.getVelocity());
-        //telemetry.update();
+        //telemetry.update(); // optional, updates the screen immediately
     }
 }

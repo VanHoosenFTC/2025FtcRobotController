@@ -7,34 +7,32 @@ import dev.nextftc.hardware.impl.ServoEx;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
- * Servo Subsystem for the robot.
- *
- * This class controls a servo mechanism with position control.
- * It provides commands to set the servo to various positions (min, max, middle, custom).
+ * This class controls the servo that changes where the robot shoots the ball.
+ * Think of the servo like a tiny arm that can move up and down to aim.
  */
 public class ShootingDirectionServo implements Subsystem {
 
-    // Singleton instance of the ServoSubsystem (initially null)
+    // We make only one copy of this class (Singleton pattern)
     private static ShootingDirectionServo INSTANCE = null;
 
-    // Servo instance - initialized with hardware map name
+    // The actual servo hardware on the robot
     private ServoEx servo;
+
+    // This name must match what we set in the Control Hub configuration
     private static final String SERVO_NM = "sm_servo";
 
-    // Telemetry for displaying servo status
+    // Used to show info on the Driver Station screen
     private Telemetry telemetry;
 
-    // Private constructor to ensure only one instance exists
+    // This constructor sets up the servo and telemetry system
     private ShootingDirectionServo(Telemetry telemetry) {
-
         this.telemetry = telemetry;
-        servo = new ServoEx(SERVO_NM);
+        servo = new ServoEx(SERVO_NM); // Connects to the servo using its name
     }
 
     /**
-     * Gets or creates the singleton instance of the ServoSubsystem.
-     * @param telemetry The telemetry object to use for displaying data
-     * @return The singleton instance
+     * This method gives you the servo controller.
+     * If it doesn’t exist yet, it creates it.
      */
     public static ShootingDirectionServo getInstance(Telemetry telemetry) {
         if (INSTANCE == null) {
@@ -44,154 +42,78 @@ public class ShootingDirectionServo implements Subsystem {
     }
 
     /**
-     * Gets the existing singleton instance (use only after getInstance(telemetry) has been called)
-     * @return The singleton instance
+     * This method gives the already-created servo controller.
+     * (You must call the one above first to set it up.)
      */
     public static ShootingDirectionServo getInstance() {
         if (INSTANCE == null) {
-            throw new IllegalStateException("ServoSubsystem must be initialized with telemetry first!");
+            throw new IllegalStateException("You must set up the servo first using telemetry!");
         }
         return INSTANCE;
     }
 
-    // Servo positions
-    private double minPos = 0.0;
-    private double pos1 = 0.33;
-    private double pos2 = 0.67;
-    private double maxPos = 1.0;
+    // The limits of how far the servo can move
+    private final double minPos = 1.0; // Highest position
+    private final double maxPos = 0.8; // Lowest position
 
+    // How much the servo moves each time you press a button
     private static final double SERVO_POS_INCREMENT = 0.05;
 
     /**
-     * Initialize the servo with a hardware map name
-     * @param SERVO_NM The name of the servo in the hardware map
+     * Command to move the shooting servo UP a little.
+     * This makes the robot aim higher.
      */
-    public void initialize(String SERVO_NM) {
-        this.servo = new ServoEx(SERVO_NM);
-//        this.servo.setdirection(ServoEx.Direction.FORWARD);
-    }
-
-    /**
-     * Initialize the servo with custom positions
-     * @param servoName The name of the servo in the hardware map
-     * @param minPos Minimum position (0.0 to 1.0)
-     * @param pos1 First intermediate position
-     * @param pos2 Second intermediate position
-     * @param maxPos Maximum position (0.0 to 1.0)
-     */
-    public void initialize(String servoName, double minPos, double pos1, double pos2, double maxPos) {
-        this.servo = new ServoEx(servoName);
-        this.minPos = minPos;
-        this.pos1 = pos1;
-        this.pos2 = pos2;
-        this.maxPos = maxPos;
-    }
-
-    // Command to set servo to minimum position
-    public Command setMinPos = new InstantCommand(() -> {
-        if (servo != null) servo.setPosition(minPos);
-    }).requires(this);
-
-    // Command to set servo to first intermediate position
-    public Command setPos1 = new InstantCommand(() -> {
-        if (servo != null) servo.setPosition(pos1);
-    }).requires(this);
-
-    // Command to set servo to second intermediate position
-    public Command setPos2 = new InstantCommand(() -> {
-        if (servo != null) servo.setPosition(pos2);
-    }).requires(this);
-
-    // Command to set servo to maximum position
-    public Command setMaxPos = new InstantCommand(() -> {
-        if (servo != null) servo.setPosition(maxPos);
-    }).requires(this);
-
-    // Legacy commands for backward compatibility
-//    public Command setMin = setMinPos;
-//    public Command setMax = setMaxPos;
-//    public Command setMiddle = setPos1;
-
-    /**
-     * Command to set servo to a custom position
-     * @param increment The target position (0.0 to 1.0)
-     * @return Command to set the position
-     */
-    public Command setPosition(double increment) {
-        return new InstantCommand(() -> {
-            if (servo != null) {
-                double futurePos = servo.getPosition() + increment;
-                double clampedPosition = Math.max(0.0, Math.min(1.0, futurePos));
-                servo.setPosition(clampedPosition);
-            }
-        }).requires(this);
-    }
-
     public Command upShootingServo = new InstantCommand(() -> {
         if (servo != null) {
-            double clampedPosition = Math.min(1.0, servo.getPosition() + SERVO_POS_INCREMENT);
+            // Increases servo position but doesn’t go past its limit
+            double clampedPosition = Math.min(minPos, servo.getPosition() + SERVO_POS_INCREMENT);
             servo.setPosition(clampedPosition);
         }
     }).requires(this);
+
+    /**
+     * Command to move the shooting servo DOWN a little.
+     * This makes the robot aim lower.
+     */
     public Command downShootingServo = new InstantCommand(() -> {
         if (servo != null) {
-            double clampedPosition = Math.max(0.8, servo.getPosition() - SERVO_POS_INCREMENT);
+            // Decreases servo position but doesn’t go below its limit
+            double clampedPosition = Math.max(maxPos, servo.getPosition() - SERVO_POS_INCREMENT);
             servo.setPosition(clampedPosition);
         }
     }).requires(this);
 
     /**
-     * Get the current servo position
-     * @return Current position (0.0 to 1.0)
-     */
-    public double getPosition() {
-        return servo != null ? servo.getPosition() : 0.0;
-    }
-
-    /**
-     * Get the configured positions
-     */
-//    public double getMinPos() { return minPos; }
-//    public double getPos1() { return pos1; }
-//    public double getPos2() { return pos2; }
-//    public double getMaxPos() { return maxPos; }
-
-    /**
-     * The periodic method is called repeatedly while the robot is running.
-     * Displays telemetry data about the servo status.
+     * This runs over and over during the match.
+     * It shows the servo’s position on the Driver Station screen.
      */
     @Override
     public void periodic() {
-        telemetry.addData("<=====Servo Subsystem=====>", "");
+        telemetry.addData("<===== Shooting Direction Servo =====>", "");
         if (servo != null) {
-            double currentPos = servo.getPosition();
-            String positionName = getCurrentPositionName(currentPos);
+            double currentPos = servo.getPosition(); // Find where the servo is
+            String positionName = getCurrentPositionName(currentPos); // Give it a name (like "Min" or "Max")
             telemetry.addData("Current Position", positionName);
             telemetry.addData("Position Value", "%.3f", currentPos);
         } else {
             telemetry.addData("Servo Status", "Not Initialized");
         }
-        //telemetry.update();
+        //telemetry.update(); // Uncomment if you want live updates
     }
 
     /**
-     * Helper method to determine which position the servo is currently at
-     * @param currentPos The current servo position
-     * @return The name of the position (min, pos1, pos2, max, or "Custom")
+     * This helps figure out what position the servo is currently in.
+     * It compares the servo’s number with the known positions.
      */
     private String getCurrentPositionName(double currentPos) {
-        double tolerance = 0.01; // Tolerance for position comparison
+        double tolerance = 0.01; // Small wiggle room for comparing numbers
 
         if (Math.abs(currentPos - minPos) < tolerance) {
-            return "Min";
-        } else if (Math.abs(currentPos - pos1) < tolerance) {
-            return "Pos1";
-        } else if (Math.abs(currentPos - pos2) < tolerance) {
-            return "Pos2";
+            return "Min"; // Fully up
         } else if (Math.abs(currentPos - maxPos) < tolerance) {
-            return "Max";
+            return "Max"; // Fully down
         } else {
-            return "Custom";
+            return "Custom"; // Somewhere in between
         }
     }
 }

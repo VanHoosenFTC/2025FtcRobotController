@@ -76,6 +76,7 @@
 
                 // Get the object of Intake singleton class and stop that motor
                 Intake.getInstance().stop();
+                BallLoadingServo.getInstance().stop();
 
         }).requires(this);
 
