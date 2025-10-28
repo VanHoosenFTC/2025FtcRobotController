@@ -95,12 +95,17 @@ public class RobotCentricTeleOp extends NextFTCOpMode {
         // Right bumper → increase shooter power
         Gamepads.gamepad2().rightBumper().whenBecomesTrue(shootingSystem.increaseShootingPower);
 
+        // Intake System Controls on Gamepad 2 as before
+        Gamepads.gamepad2().b().whenBecomesTrue(intakeSystem.reverse);
+        Gamepads.gamepad2().a().whenBecomesTrue(intakeSystem.startStop);
+
+        /*
         // B button → reverse the intake (spit out the balls)
         Gamepads.gamepad2().b().whenBecomesTrue(intakeSystem.reverse);
 
         // A button → aim the shooter up
         Gamepads.gamepad2().a().whenBecomesTrue(shootingDirectionServo.upShootingServo);
-
+*/
         // Back button → stop everything in the shooting system
         Gamepads.gamepad2().back().whenBecomesTrue(shootingSystem.stopAllSubsystems);
 
@@ -109,6 +114,13 @@ public class RobotCentricTeleOp extends NextFTCOpMode {
 
         // D-Pad Right → stop the ball loading servo
         Gamepads.gamepad2().dpadRight().whenBecomesTrue(ballLoadingServo.stopContinuous());
+//New Update
+        // D-Pad Left → run the ball loading servo backward (to load balls)
+        Gamepads.gamepad2().dpadUp().whenBecomesTrue(shootingDirectionServo.downShootingServo);
+
+        // D-Pad Right → stop the ball loading servo
+        Gamepads.gamepad2().dpadDown().whenBecomesTrue(shootingDirectionServo.upShootingServo);
+
     }
 
 }
